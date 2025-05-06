@@ -1,5 +1,6 @@
 from flask import Flask, request, Response, render_template, jsonify
 from twilio.twiml.voice_response import VoiceResponse, Gather
+from twilio.rest import Client
 import openai
 import os
 import logging
@@ -173,6 +174,49 @@ def end_call():
     
     response = VoiceResponse()
     return Response(str(response), mimetype='text/xml')
+
+@app.route("/callme", methods=["GET"])
+def callme():
+    """Make an outbound call to the specified number"""
+    # Twilio credentials from environment variables
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+    auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+    twilio_number = os.environ.get("TWILIO_PHONE_NUMBER")
+    
+    # Get the number to call from query param or use a default
+    your_number = request.args.get("number", "+917057836993")  # Default to the provided number
+    
+    # Get the current URL for the callback
+    host = request.host
+    protocol = "https" if request.headers.get('X-Forwarded-Proto') == 'https' else "http"
+    callback_url = f"{protocol}://{host}/voice"
+    
+    try:
+        # Initialize Twilio client
+        twilio_client = Client(account_sid, auth_token)
+        
+        # Create the call
+        call = twilio_client.calls.create(
+            to=your_number,
+            from_=twilio_number,
+            url=callback_url  # Use our voice endpoint
+        )
+        
+        logger.info(f"Outbound call initiated to {your_number}, Call SID: {call.sid}")
+        
+        # Return success response
+        return jsonify({
+            "status": "success", 
+            "message": f"Calling {your_number} now...",
+            "call_sid": call.sid
+        })
+        
+    except Exception as e:
+        logger.error(f"Error making outbound call: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to make call: {str(e)}"
+        }), 500
 
 if __name__ == "__main__":
     # Check if OpenAI API key is set

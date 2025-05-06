@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set up periodic status checking (every 10 seconds)
     setInterval(checkStatus, 10000);
+    
+    // Set up call button
+    const callButton = document.getElementById('call-button');
+    if (callButton) {
+        callButton.addEventListener('click', initiateCall);
+    }
 });
 
 /**
@@ -80,4 +86,65 @@ function setStatusOffline() {
     const activeCallsElement = document.getElementById('active-calls');
     activeCallsElement.textContent = '-';
     activeCallsElement.className = 'ms-auto badge bg-secondary';
+}
+
+/**
+ * Initiate an outbound call to the specified phone number
+ */
+function initiateCall() {
+    const phoneInput = document.getElementById('phone-number');
+    const callStatus = document.getElementById('call-status');
+    const callButton = document.getElementById('call-button');
+    
+    // Validate phone number format (basic check)
+    const phoneNumber = phoneInput.value.trim();
+    if (!phoneNumber.startsWith('+')) {
+        showCallStatus('error', 'Phone number must start with + and include country code');
+        return;
+    }
+    
+    // Disable button and show loading state
+    callButton.disabled = true;
+    callButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Calling...';
+    
+    // Make request to initiate call
+    fetch(`/callme?number=${encodeURIComponent(phoneNumber)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                showCallStatus('success', `${data.message} Call ID: ${data.call_sid}`);
+            } else {
+                showCallStatus('error', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error initiating call:', error);
+            showCallStatus('error', `Failed to initiate call: ${error.message}`);
+        })
+        .finally(() => {
+            // Re-enable button
+            callButton.disabled = false;
+            callButton.innerHTML = '<i data-feather="phone-outgoing" class="me-1"></i> Call Me';
+            feather.replace(); // Refresh icons
+        });
+}
+
+/**
+ * Display call status message
+ */
+function showCallStatus(type, message) {
+    const callStatus = document.getElementById('call-status');
+    callStatus.textContent = message;
+    callStatus.className = `alert mt-2 ${type === 'success' ? 'alert-success' : 'alert-danger'}`;
+    callStatus.classList.remove('d-none');
+    
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+        callStatus.classList.add('d-none');
+    }, 10000);
 }

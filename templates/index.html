@@ -64,6 +64,16 @@
                         <li>Speak with the AI assistant</li>
                     </ol>
                     <p>The AI will convert your speech to text, process it, and respond back with synthesized speech.</p>
+                    
+                    <h3 class="mt-4">Outbound Call</h3>
+                    <p>Want the AI to call you? Enter your phone number below:</p>
+                    <div class="input-group mb-3">
+                        <input type="tel" id="phone-number" class="form-control" placeholder="Enter phone number (with country code)" value="+917057836993">
+                        <button class="btn btn-primary" type="button" id="call-button">
+                            <i data-feather="phone-outgoing" class="me-1"></i> Call Me
+                        </button>
+                    </div>
+                    <div id="call-status" class="alert d-none mt-2"></div>
                 </div>
             </div>
         </div>
