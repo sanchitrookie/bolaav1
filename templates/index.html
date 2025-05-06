@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Agent</title>
+    <!-- Bootstrap CSS (Replit Dark Theme) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+</head>
+<body>
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom">
+            <div class="d-flex align-items-center text-white">
+                <i data-feather="phone" class="me-2"></i>
+                <span class="fs-4">AI Voice Agent</span>
+            </div>
+        </header>
+
+        <div class="p-5 mb-4 bg-dark rounded-3">
+            <div class="container-fluid py-5">
+                <h1 class="display-5 fw-bold">AI-Powered Voice Assistant</h1>
+                <p class="col-md-8 fs-4">
+                    This service uses AI to provide conversational support via phone calls.
+                    Powered by Twilio and GPT-4o.
+                </p>
+                <div id="status-badge" class="badge bg-secondary mb-3">Checking status...</div>
+            </div>
+        </div>
+
+        <div class="row align-items-md-stretch">
+            <div class="col-md-6">
+                <div class="h-100 p-5 bg-dark border rounded-3">
+                    <h2>Service Status</h2>
+                    <div id="status-panel">
+                        <div class="d-flex align-items-center mb-2">
+                            <i data-feather="server" class="me-2"></i>
+                            <span>Server: </span>
+                            <span id="server-status" class="ms-auto badge bg-secondary">Checking...</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i data-feather="terminal" class="me-2"></i>
+                            <span>OpenAI API: </span>
+                            <span id="openai-status" class="ms-auto badge bg-secondary">Checking...</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i data-feather="phone-call" class="me-2"></i>
+                            <span>Active Calls: </span>
+                            <span id="active-calls" class="ms-auto badge bg-secondary">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="h-100 p-5 bg-dark border rounded-3">
+                    <h2>How to Use</h2>
+                    <ol>
+                        <li>Configure a Twilio phone number</li>
+                        <li>Set the voice webhook URL to: <code>{your-domain}/voice</code></li>
+                        <li>Call your Twilio number</li>
+                        <li>Speak with the AI assistant</li>
+                    </ol>
+                    <p>The AI will convert your speech to text, process it, and respond back with synthesized speech.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="pt-3 mt-4 text-muted border-top">
+            &copy; 2024 AI Voice Agent
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+    </script>
+</body>
+</html>
