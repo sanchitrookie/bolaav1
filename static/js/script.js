@@ -139,12 +139,26 @@ function initiateCall() {
  */
 function showCallStatus(type, message) {
     const callStatus = document.getElementById('call-status');
-    callStatus.textContent = message;
+    
+    // Add verification link if needed
+    if (type === 'error' && message.includes('not verified')) {
+        const link = document.createElement('a');
+        link.href = 'https://www.twilio.com/console/phone-numbers/verified';
+        link.target = '_blank';
+        link.className = 'alert-link';
+        link.textContent = 'Verify this number in your Twilio console';
+        
+        callStatus.textContent = message + ' ';
+        callStatus.appendChild(link);
+    } else {
+        callStatus.textContent = message;
+    }
+    
     callStatus.className = `alert mt-2 ${type === 'success' ? 'alert-success' : 'alert-danger'}`;
     callStatus.classList.remove('d-none');
     
-    // Auto-hide after 10 seconds
+    // Auto-hide after 15 seconds for more time to read
     setTimeout(() => {
         callStatus.classList.add('d-none');
-    }, 10000);
+    }, 15000);
 }

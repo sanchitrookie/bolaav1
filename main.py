@@ -212,11 +212,21 @@ def callme():
         })
         
     except Exception as e:
-        logger.error(f"Error making outbound call: {str(e)}")
-        return jsonify({
-            "status": "error",
-            "message": f"Failed to make call: {str(e)}"
-        }), 500
+        error_msg = str(e)
+        logger.error(f"Error making outbound call: {error_msg}")
+        
+        # Check for the specific Twilio verification error
+        if "unverified" in error_msg and "trial account" in error_msg:
+            return jsonify({
+                "status": "error",
+                "message": "This phone number is not verified with your Twilio trial account. Please verify it in your Twilio console first.",
+                "code": "verification_required"
+            }), 400
+        else:
+            return jsonify({
+                "status": "error",
+                "message": f"Failed to make call: {error_msg}"
+            }), 500
 
 if __name__ == "__main__":
     # Check if OpenAI API key is set
