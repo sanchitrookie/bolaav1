@@ -50,6 +50,20 @@ function updateStatusUI(data) {
     // Update OpenAI API status
     const openaiStatus = document.getElementById('openai-status');
     const openaiDetails = document.getElementById('openai-details');
+    const modelElement = document.getElementById('model-status');
+    
+    // Update model info if available
+    if (modelElement && data.model) {
+        modelElement.textContent = data.model;
+        
+        if (data.model.includes('gpt-4o')) {
+            modelElement.className = 'ms-auto badge bg-success';
+        } else if (data.model.includes('gpt-3.5')) {
+            modelElement.className = 'ms-auto badge bg-warning';
+        } else {
+            modelElement.className = 'ms-auto badge bg-secondary';
+        }
+    }
     
     if (data.openai_api === 'OK') {
         openaiStatus.textContent = 'Connected';
@@ -57,6 +71,14 @@ function updateStatusUI(data) {
         if (openaiDetails) {
             openaiDetails.textContent = '';
             openaiDetails.classList.add('d-none');
+        }
+    } else if (data.openai_api === 'FALLBACK MODE') {
+        openaiStatus.textContent = 'Using Fallback';
+        openaiStatus.className = 'ms-auto badge bg-warning';
+        if (openaiDetails) {
+            openaiDetails.textContent = 'Primary model (GPT-4o) is unavailable. Using GPT-3.5-turbo as fallback.';
+            openaiDetails.className = 'form-text text-warning small mt-1';
+            openaiDetails.classList.remove('d-none');
         }
     } else if (data.openai_api === 'QUOTA EXCEEDED') {
         openaiStatus.textContent = 'Quota Exceeded';
@@ -72,6 +94,14 @@ function updateStatusUI(data) {
         if (openaiDetails) {
             openaiDetails.textContent = 'The OpenAI API is currently rate limited. Calls may experience delays or errors.';
             openaiDetails.className = 'form-text text-warning small mt-1';
+            openaiDetails.classList.remove('d-none');
+        }
+    } else if (data.openai_api === 'ALL MODELS UNAVAILABLE') {
+        openaiStatus.textContent = 'All Models Unavailable';
+        openaiStatus.className = 'ms-auto badge bg-danger';
+        if (openaiDetails) {
+            openaiDetails.textContent = 'Both GPT-4o and GPT-3.5-turbo models are unavailable. Voice functionality will not work.';
+            openaiDetails.className = 'form-text text-danger small mt-1';
             openaiDetails.classList.remove('d-none');
         }
     } else {
@@ -108,6 +138,21 @@ function setStatusOffline() {
     const openaiStatus = document.getElementById('openai-status');
     openaiStatus.textContent = 'Unavailable';
     openaiStatus.className = 'ms-auto badge bg-danger';
+    
+    // Update model status
+    const modelElement = document.getElementById('model-status');
+    if (modelElement) {
+        modelElement.textContent = 'Unavailable';
+        modelElement.className = 'ms-auto badge bg-secondary';
+    }
+    
+    // Update API details message
+    const openaiDetails = document.getElementById('openai-details');
+    if (openaiDetails) {
+        openaiDetails.textContent = 'Server connection lost. Please check if the server is running.';
+        openaiDetails.className = 'form-text text-danger small mt-1';
+        openaiDetails.classList.remove('d-none');
+    }
     
     // Update active calls
     const activeCallsElement = document.getElementById('active-calls');

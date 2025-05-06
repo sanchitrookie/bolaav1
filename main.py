@@ -45,31 +45,52 @@ def status():
     # Check if OpenAI API key exists
     if not openai_api_key:
         api_status = "MISSING API KEY"
+        model_info = "none"
     else:
         # Test OpenAI API with a minimal request to check if it's working
         try:
-            # Make a minimal API call to check quota
-            client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": "test"}],
-                max_tokens=5
-            )
-            api_status = "OK"
+            # Try GPT-4o first
+            try:
+                # Make a minimal API call to check quota
+                client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": "test"}],
+                    max_tokens=5
+                )
+                api_status = "OK"
+                model_info = "gpt-4o"
+            except Exception as e:
+                error_msg = str(e)
+                # Check if it's a quota or rate limit error
+                if "429" in error_msg and ("quota" in error_msg or "insufficient_quota" in error_msg):
+                    # Try fallback to GPT-3.5
+                    try:
+                        client.chat.completions.create(
+                            model="gpt-3.5-turbo",
+                            messages=[{"role": "user", "content": "test"}],
+                            max_tokens=5
+                        )
+                        api_status = "FALLBACK MODE"
+                        model_info = "gpt-3.5-turbo (fallback)"
+                    except Exception as e2:
+                        api_status = "ALL MODELS UNAVAILABLE"
+                        model_info = "none"
+                elif "429" in error_msg:
+                    api_status = "RATE LIMITED"
+                    model_info = "unavailable (rate limited)"
+                else:
+                    api_status = f"ERROR: {error_msg[:50]}..."
+                    model_info = "error"
         except Exception as e:
             error_msg = str(e)
             logger.warning(f"OpenAI API test failed: {error_msg}")
-            
-            # Check for specific error types
-            if "429" in error_msg and ("quota" in error_msg or "insufficient_quota" in error_msg):
-                api_status = "QUOTA EXCEEDED"
-            elif "429" in error_msg:
-                api_status = "RATE LIMITED"
-            else:
-                api_status = f"ERROR: {error_msg[:50]}..."
+            api_status = f"ERROR: {error_msg[:50]}..."
+            model_info = "error"
     
     return jsonify({
         "status": "running",
         "openai_api": api_status,
+        "model": model_info,
         "active_calls": len(conversation_store)
     })
 
@@ -148,13 +169,33 @@ def process_speech():
     # Generate AI response
     try:
         start_time = time.time()
-        completion = client.chat.completions.create(
-            model="gpt-4o",  # Using the latest model
-            messages=conversation_store[call_sid],
-            max_tokens=200  # Limit token count for faster response
-        )
-        ai_reply = completion.choices[0].message.content
-        logger.debug(f"AI replied in {time.time() - start_time:.2f}s: {ai_reply}")
+        # First try with GPT-4o
+        try:
+            completion = client.chat.completions.create(
+                model="gpt-4o",  # Using the latest model
+                messages=conversation_store[call_sid],
+                max_tokens=200  # Limit token count for faster response
+            )
+            ai_reply = completion.choices[0].message.content
+            model_used = "gpt-4o"
+        except Exception as model_error:
+            # Check if it's a quota or rate limit error
+            error_msg = str(model_error)
+            if "429" in error_msg or "quota" in error_msg or "insufficient_quota" in error_msg:
+                logger.warning(f"GPT-4o quota exceeded, falling back to GPT-3.5-turbo: {error_msg}")
+                # Fallback to GPT-3.5-turbo
+                completion = client.chat.completions.create(
+                    model="gpt-3.5-turbo",  # Fallback model
+                    messages=conversation_store[call_sid],
+                    max_tokens=200  # Limit token count for faster response
+                )
+                ai_reply = completion.choices[0].message.content
+                model_used = "gpt-3.5-turbo"
+            else:
+                # Re-raise the original error if it's not quota-related
+                raise model_error
+                
+        logger.debug(f"AI replied using {model_used} in {time.time() - start_time:.2f}s: {ai_reply}")
         
         # Add AI response to conversation history
         conversation_store[call_sid].append(
