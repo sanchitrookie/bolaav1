@@ -49,35 +49,22 @@ def status():
     else:
         # Test OpenAI API with a minimal request to check if it's working
         try:
-            # Try GPT-4o first
+            # We're using GPT-3.5-turbo directly now due to rate limit issues with GPT-4o
             try:
-                # Make a minimal API call to check quota
+                # Make a minimal API call to check connectivity
                 client.chat.completions.create(
-                    model="gpt-4o",
+                    model="gpt-3.5-turbo",  # Using more reliable model
                     messages=[{"role": "user", "content": "test"}],
                     max_tokens=5
                 )
                 api_status = "OK"
-                model_info = "gpt-4o"
+                model_info = "gpt-3.5-turbo"
             except Exception as e:
                 error_msg = str(e)
-                # Check if it's a quota or rate limit error
-                if "429" in error_msg and ("quota" in error_msg or "insufficient_quota" in error_msg):
-                    # Try fallback to GPT-3.5
-                    try:
-                        client.chat.completions.create(
-                            model="gpt-3.5-turbo",
-                            messages=[{"role": "user", "content": "test"}],
-                            max_tokens=5
-                        )
-                        api_status = "FALLBACK MODE"
-                        model_info = "gpt-3.5-turbo (fallback)"
-                    except Exception as e2:
-                        api_status = "ALL MODELS UNAVAILABLE"
-                        model_info = "none"
-                elif "429" in error_msg:
+                # Check the type of error
+                if "429" in error_msg:
                     api_status = "RATE LIMITED"
-                    model_info = "unavailable (rate limited)"
+                    model_info = "gpt-3.5-turbo (rate limited)"
                 else:
                     api_status = f"ERROR: {error_msg[:50]}..."
                     model_info = "error"
@@ -169,31 +156,23 @@ def process_speech():
     # Generate AI response
     try:
         start_time = time.time()
-        # Try GPT-4o first
+        # Due to consistent rate limit issues with GPT-4o, directly use GPT-3.5-turbo
+        # This is more reliable for voice calls where responsiveness is important
         try:
+            logger.info("Using GPT-3.5-turbo directly to avoid rate limits")
             completion = client.chat.completions.create(
-                model="gpt-4o",  # Using the latest model
+                model="gpt-3.5-turbo",  # More reliable model with fewer rate limits
                 messages=conversation_store[call_sid],
                 max_tokens=200  # Limit token count for faster response
             )
             ai_reply = completion.choices[0].message.content
-            model_used = "gpt-4o"
+            model_used = "gpt-3.5-turbo"
         except Exception as model_error:
-            # Check if it's a quota or rate limit error
+            # Log the error for debugging
             error_msg = str(model_error)
-            if "429" in error_msg or "quota" in error_msg or "insufficient_quota" in error_msg:
-                logger.warning(f"GPT-4o quota exceeded, falling back to GPT-3.5-turbo: {error_msg}")
-                # Fallback to GPT-3.5-turbo
-                completion = client.chat.completions.create(
-                    model="gpt-3.5-turbo",  # Fallback model
-                    messages=conversation_store[call_sid],
-                    max_tokens=200  # Limit token count for faster response
-                )
-                ai_reply = completion.choices[0].message.content
-                model_used = "gpt-3.5-turbo"
-            else:
-                # Re-raise the original error if it's not quota-related
-                raise model_error
+            logger.error(f"GPT-3.5-turbo error: {error_msg}")
+            # Re-raise the error to be handled by the outer try/except
+            raise model_error
                 
         logger.debug(f"AI replied using {model_used} in {time.time() - start_time:.2f}s: {ai_reply}")
         
