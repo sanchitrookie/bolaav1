@@ -49,12 +49,39 @@ function updateStatusUI(data) {
     
     // Update OpenAI API status
     const openaiStatus = document.getElementById('openai-status');
+    const openaiDetails = document.getElementById('openai-details');
+    
     if (data.openai_api === 'OK') {
         openaiStatus.textContent = 'Connected';
         openaiStatus.className = 'ms-auto badge bg-success';
+        if (openaiDetails) {
+            openaiDetails.textContent = '';
+            openaiDetails.classList.add('d-none');
+        }
+    } else if (data.openai_api === 'QUOTA EXCEEDED') {
+        openaiStatus.textContent = 'Quota Exceeded';
+        openaiStatus.className = 'ms-auto badge bg-danger';
+        if (openaiDetails) {
+            openaiDetails.textContent = 'The OpenAI API quota has been exceeded. Voice calls will not receive AI responses until the quota resets.';
+            openaiDetails.className = 'form-text text-danger small mt-1';
+            openaiDetails.classList.remove('d-none');
+        }
+    } else if (data.openai_api === 'RATE LIMITED') {
+        openaiStatus.textContent = 'Rate Limited';
+        openaiStatus.className = 'ms-auto badge bg-warning';
+        if (openaiDetails) {
+            openaiDetails.textContent = 'The OpenAI API is currently rate limited. Calls may experience delays or errors.';
+            openaiDetails.className = 'form-text text-warning small mt-1';
+            openaiDetails.classList.remove('d-none');
+        }
     } else {
         openaiStatus.textContent = 'Issue: ' + data.openai_api;
         openaiStatus.className = 'ms-auto badge bg-warning';
+        if (openaiDetails) {
+            openaiDetails.textContent = 'The OpenAI API is experiencing issues. Voice functionality may be limited.';
+            openaiDetails.className = 'form-text text-warning small mt-1';
+            openaiDetails.classList.remove('d-none');
+        }
     }
     
     // Update active calls

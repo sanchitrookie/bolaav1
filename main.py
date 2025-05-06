@@ -42,7 +42,31 @@ def index():
 @app.route("/status", methods=['GET'])
 def status():
     """API endpoint to check service status"""
-    api_status = "OK" if openai_api_key else "MISSING API KEY"
+    # Check if OpenAI API key exists
+    if not openai_api_key:
+        api_status = "MISSING API KEY"
+    else:
+        # Test OpenAI API with a minimal request to check if it's working
+        try:
+            # Make a minimal API call to check quota
+            client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": "test"}],
+                max_tokens=5
+            )
+            api_status = "OK"
+        except Exception as e:
+            error_msg = str(e)
+            logger.warning(f"OpenAI API test failed: {error_msg}")
+            
+            # Check for specific error types
+            if "429" in error_msg and ("quota" in error_msg or "insufficient_quota" in error_msg):
+                api_status = "QUOTA EXCEEDED"
+            elif "429" in error_msg:
+                api_status = "RATE LIMITED"
+            else:
+                api_status = f"ERROR: {error_msg[:50]}..."
+    
     return jsonify({
         "status": "running",
         "openai_api": api_status,
@@ -156,11 +180,26 @@ def process_speech():
         return Response(str(response), mimetype='text/xml')
         
     except Exception as e:
-        logger.error(f"Error generating response: {str(e)}")
+        error_msg = str(e)
+        logger.error(f"Error generating response: {error_msg}")
+        
         # Handle errors gracefully
         response = VoiceResponse()
-        response.say("I'm sorry, I'm having trouble processing your request. Let me try again.", voice='alice')
-        return redirect_to_gather()
+        
+        # Check for OpenAI quota/rate limit errors
+        if "429" in error_msg and ("quota" in error_msg or "insufficient_quota" in error_msg):
+            response.say("I'm sorry, but our AI service is currently at capacity. Your message was received, but we cannot generate a response at this time. Please try again later when our API quota has reset.", voice='alice')
+            response.hangup()
+        elif "429" in error_msg:
+            response.say("I'm sorry, but our AI service is experiencing high demand. Please wait a moment and try speaking again.", voice='alice')
+            # Add a pause and try again
+            response.pause(length=3)
+            return redirect_to_gather()
+        else:
+            response.say("I'm sorry, I'm having trouble processing your request. Let me try again.", voice='alice')
+            return redirect_to_gather()
+        
+        return Response(str(response), mimetype='text/xml')
 
 @app.route("/end_call", methods=['POST'])
 def end_call():
