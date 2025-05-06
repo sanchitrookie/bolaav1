@@ -49,22 +49,38 @@ def status():
     else:
         # Test OpenAI API with a minimal request to check if it's working
         try:
-            # Try GPT-4o first, but don't actually make an API call to avoid rate limits
-            # Check if our more specific process_speech function has recently encountered a quota error
-            api_status = "OK"
-            model_info = "gpt-4o"
-            
-            # If we have an active process_speech, try to use it to determine status
+            # Try GPT-4o first
             try:
-                # Simple test to see if GPT-4o is available
-                # If this was a real environment, we could cache the result of this test
-                # But in this case, we'll just assume that if the API key exists, the API is working
-                api_status = "FALLBACK MODE"
-                model_info = "gpt-3.5-turbo (fallback)"
-            except Exception:
-                # Error even with the fallback model
-                pass
-                
+                # Make a minimal API call to check quota
+                client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": "test"}],
+                    max_tokens=5
+                )
+                api_status = "OK"
+                model_info = "gpt-4o"
+            except Exception as e:
+                error_msg = str(e)
+                # Check if it's a quota or rate limit error
+                if "429" in error_msg and ("quota" in error_msg or "insufficient_quota" in error_msg):
+                    # Try fallback to GPT-3.5
+                    try:
+                        client.chat.completions.create(
+                            model="gpt-3.5-turbo",
+                            messages=[{"role": "user", "content": "test"}],
+                            max_tokens=5
+                        )
+                        api_status = "FALLBACK MODE"
+                        model_info = "gpt-3.5-turbo (fallback)"
+                    except Exception as e2:
+                        api_status = "ALL MODELS UNAVAILABLE"
+                        model_info = "none"
+                elif "429" in error_msg:
+                    api_status = "RATE LIMITED"
+                    model_info = "unavailable (rate limited)"
+                else:
+                    api_status = f"ERROR: {error_msg[:50]}..."
+                    model_info = "error"
         except Exception as e:
             error_msg = str(e)
             logger.warning(f"OpenAI API test failed: {error_msg}")
@@ -153,24 +169,31 @@ def process_speech():
     # Generate AI response
     try:
         start_time = time.time()
-        # Use a simpler, less error-prone approach - just use GPT-3.5-turbo directly
-        # instead of trying GPT-4o first which is currently at quota limit
+        # Try GPT-4o first
         try:
-            # Skip GPT-4o since we know it's at quota limit
-            logger.warning("Directly using GPT-3.5-turbo due to known GPT-4o quota issues")
             completion = client.chat.completions.create(
-                model="gpt-3.5-turbo",  # Use the fallback model directly
+                model="gpt-4o",  # Using the latest model
                 messages=conversation_store[call_sid],
                 max_tokens=200  # Limit token count for faster response
             )
             ai_reply = completion.choices[0].message.content
-            model_used = "gpt-3.5-turbo"
+            model_used = "gpt-4o"
         except Exception as model_error:
-            # If even GPT-3.5-turbo fails, handle that error
+            # Check if it's a quota or rate limit error
             error_msg = str(model_error)
-            logger.error(f"Error with GPT-3.5-turbo: {error_msg}")
-            # Re-raise the error to be handled by the outer try/except
-            raise model_error
+            if "429" in error_msg or "quota" in error_msg or "insufficient_quota" in error_msg:
+                logger.warning(f"GPT-4o quota exceeded, falling back to GPT-3.5-turbo: {error_msg}")
+                # Fallback to GPT-3.5-turbo
+                completion = client.chat.completions.create(
+                    model="gpt-3.5-turbo",  # Fallback model
+                    messages=conversation_store[call_sid],
+                    max_tokens=200  # Limit token count for faster response
+                )
+                ai_reply = completion.choices[0].message.content
+                model_used = "gpt-3.5-turbo"
+            else:
+                # Re-raise the original error if it's not quota-related
+                raise model_error
                 
         logger.debug(f"AI replied using {model_used} in {time.time() - start_time:.2f}s: {ai_reply}")
         
@@ -204,10 +227,18 @@ def process_speech():
         # Handle errors gracefully
         response = VoiceResponse()
         
-        # Always provide a helpful message, since we know we're using the fallback model
-        response.say("I apologize, but I'm having a technical issue at the moment. I've received your message but I'm experiencing difficulty generating a proper response. Our team is working on it, and the system should be fully operational soon.", voice='alice')
-        response.say("Thank you for your patience. Please try calling back later.", voice='alice')
-        response.hangup()
+        # Check for OpenAI quota/rate limit errors
+        if "429" in error_msg and ("quota" in error_msg or "insufficient_quota" in error_msg):
+            response.say("I'm sorry, but our AI service is currently at capacity. Your message was received, but we cannot generate a response at this time. Please try again later when our API quota has reset.", voice='alice')
+            response.hangup()
+        elif "429" in error_msg:
+            response.say("I'm sorry, but our AI service is experiencing high demand. Please wait a moment and try speaking again.", voice='alice')
+            # Add a pause and try again
+            response.pause(length=3)
+            return redirect_to_gather()
+        else:
+            response.say("I'm sorry, I'm having trouble processing your request. Let me try again.", voice='alice')
+            return redirect_to_gather()
         
         return Response(str(response), mimetype='text/xml')
 
