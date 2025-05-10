@@ -40,12 +40,12 @@ function updateStatusUI(data) {
     // Update overall status badge
     const statusBadge = document.getElementById('status-badge');
     statusBadge.textContent = 'Service Online';
-    statusBadge.className = 'badge bg-success mb-3';
+    statusBadge.className = 'badge bg-primary mb-3';
     
     // Update server status
     const serverStatus = document.getElementById('server-status');
     serverStatus.textContent = 'Online';
-    serverStatus.className = 'ms-auto badge bg-success';
+    serverStatus.className = 'ms-auto badge bg-primary';
     
     // Update OpenAI API status
     const openaiStatus = document.getElementById('openai-status');
@@ -57,9 +57,9 @@ function updateStatusUI(data) {
         modelElement.textContent = data.model;
         
         if (data.model.includes('gpt-4o')) {
-            modelElement.className = 'ms-auto badge bg-success';
+            modelElement.className = 'ms-auto badge bg-primary';
         } else if (data.model.includes('gpt-3.5')) {
-            modelElement.className = 'ms-auto badge bg-warning';
+            modelElement.className = 'ms-auto badge bg-primary';
         } else {
             modelElement.className = 'ms-auto badge bg-secondary';
         }
@@ -67,7 +67,7 @@ function updateStatusUI(data) {
     
     if (data.openai_api === 'OK') {
         openaiStatus.textContent = 'Connected';
-        openaiStatus.className = 'ms-auto badge bg-success';
+        openaiStatus.className = 'ms-auto badge bg-primary';
         if (openaiDetails) {
             openaiDetails.textContent = '';
             openaiDetails.classList.add('d-none');

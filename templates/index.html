@@ -10,22 +10,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <!-- Feather Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container py-4">
         <header class="pb-3 mb-4 border-bottom">
             <div class="d-flex align-items-center text-white">
-                <i data-feather="phone" class="me-2"></i>
-                <span class="fs-4">AI Voice Agent</span>
+                <i data-feather="phone" class="me-2" style="color: var(--brand-pink);"></i>
+                <span class="fs-4" style="font-weight: 600; color: var(--brand-pink);">AI Voice Agent</span>
             </div>
         </header>
 
         <div class="p-5 mb-4 bg-dark rounded-3">
             <div class="container-fluid py-5">
-                <h1 class="display-5 fw-bold">AI-Powered Voice Assistant</h1>
+                <h1 class="display-5 fw-bold" style="color: var(--brand-pink);">AI-Powered Voice Assistant</h1>
                 <p class="col-md-8 fs-4">
                     This service uses AI to provide conversational support via phone calls.
-                    Powered by Twilio and GPT-4o.
+                    Powered by Twilio and OpenAI.
                 </p>
                 <div id="status-badge" class="badge bg-secondary mb-3">Checking status...</div>
             </div>
@@ -34,28 +38,28 @@
         <div class="row align-items-md-stretch">
             <div class="col-md-6">
                 <div class="h-100 p-5 bg-dark border rounded-3">
-                    <h2>Service Status</h2>
+                    <h2><span style="color: var(--brand-pink);">Service</span> Status</h2>
                     <div id="status-panel">
                         <div class="d-flex align-items-center mb-2">
-                            <i data-feather="server" class="me-2"></i>
+                            <i data-feather="server" class="me-2" style="color: var(--brand-pink);"></i>
                             <span>Server: </span>
                             <span id="server-status" class="ms-auto badge bg-secondary">Checking...</span>
                         </div>
                         <div class="mb-2">
                             <div class="d-flex align-items-center">
-                                <i data-feather="terminal" class="me-2"></i>
+                                <i data-feather="terminal" class="me-2" style="color: var(--brand-pink);"></i>
                                 <span>OpenAI API: </span>
                                 <span id="openai-status" class="ms-auto badge bg-secondary">Checking...</span>
                             </div>
                             <div id="openai-details" class="form-text text-danger small mt-1 d-none"></div>
                         </div>
                         <div class="d-flex align-items-center mb-2">
-                            <i data-feather="cpu" class="me-2"></i>
+                            <i data-feather="cpu" class="me-2" style="color: var(--brand-pink);"></i>
                             <span>Active Model: </span>
                             <span id="model-status" class="ms-auto badge bg-secondary">Checking...</span>
                         </div>
                         <div class="d-flex align-items-center mb-2">
-                            <i data-feather="phone-call" class="me-2"></i>
+                            <i data-feather="phone-call" class="me-2" style="color: var(--brand-pink);"></i>
                             <span>Active Calls: </span>
                             <span id="active-calls" class="ms-auto badge bg-secondary">-</span>
                         </div>
@@ -64,7 +68,7 @@
             </div>
             <div class="col-md-6">
                 <div class="h-100 p-5 bg-dark border rounded-3">
-                    <h2>How to Use</h2>
+                    <h2><span style="color: var(--brand-pink);">How to</span> Use</h2>
                     <ol>
                         <li>Configure a Twilio phone number</li>
                         <li>Set the voice webhook URL to: <code>{your-domain}/voice</code></li>
@@ -73,7 +77,7 @@
                     </ol>
                     <p>The AI will convert your speech to text, process it, and respond back with synthesized speech.</p>
                     
-                    <h3 class="mt-4">Outbound Call</h3>
+                    <h3 class="mt-4" style="color: var(--brand-pink);">Outbound Call</h3>
                     <p>Want the AI to call you? Enter your phone number below:</p>
                     <div class="input-group mb-3">
                         <input type="tel" id="phone-number" class="form-control" placeholder="Enter phone number (with country code)" value="+917057836993">
@@ -91,7 +95,7 @@
         </div>
 
         <footer class="pt-3 mt-4 text-muted border-top">
-            &copy; 2024 AI Voice Agent
+            &copy; 2024 AI Voice Agent | <span style="color: var(--brand-pink);">Powered by Twilio & OpenAI</span>
         </footer>
     </div>
 

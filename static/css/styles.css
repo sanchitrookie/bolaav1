@@ -1,8 +1,30 @@
-/* Custom styles for AI Voice Agent */
+/* Custom styles for AI Voice Agent - Black, White, and Pink theme */
+
+:root {
+    --brand-pink: #ff69b4;
+    --brand-pink-light: #ffa6d1;
+    --brand-pink-dark: #d64694;
+    --brand-black: #000000;
+    --brand-dark: #121212;
+    --brand-gray: #222222;
+    --brand-light-gray: #333333;
+    --brand-white: #ffffff;
+}
+
+body {
+    background-color: var(--brand-black);
+    color: var(--brand-white);
+    font-family: 'Poppins', sans-serif;
+}
 
 /* Main container */
 .container {
     max-width: 960px;
+}
+
+/* Header styles */
+header {
+    border-bottom-color: var(--brand-pink) !important;
 }
 
 /* Status badges */
@@ -11,10 +33,24 @@
     padding: 0.5rem 0.7rem;
 }
 
+.bg-primary {
+    background-color: var(--brand-pink) !important;
+}
+
+.btn-primary {
+    background-color: var(--brand-pink);
+    border-color: var(--brand-pink);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--brand-pink-dark);
+    border-color: var(--brand-pink-dark);
+}
+
 /* Code elements */
 code {
-    color: var(--bs-info);
-    background-color: rgba(var(--bs-info-rgb), 0.1);
+    color: var(--brand-pink-light);
+    background-color: rgba(0, 0, 0, 0.3);
     padding: 0.2rem 0.4rem;
     border-radius: 4px;
 }
@@ -23,13 +59,24 @@ code {
 [data-feather] {
     width: 1.2em;
     height: 1.2em;
+    color: var(--brand-white);
+}
+
+/* Jumbotron styling */
+.rounded-3 {
+    border: 1px solid var(--brand-light-gray) !important;
+}
+
+.bg-dark {
+    background-color: var(--brand-dark) !important;
 }
 
 /* Status panel styling */
 #status-panel {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--brand-gray);
     padding: 1rem;
     border-radius: 0.5rem;
+    border: 1px solid var(--brand-light-gray);
 }
 
 /* Status indicators */
@@ -42,13 +89,51 @@ code {
 }
 
 .status-green {
-    background-color: var(--bs-success);
+    background-color: var(--brand-pink);
 }
 
 .status-red {
-    background-color: var(--bs-danger);
+    background-color: #ff4d6d;
 }
 
 .status-yellow {
-    background-color: var(--bs-warning);
+    background-color: #ffc107;
+}
+
+/* Footer styling */
+footer {
+    border-top-color: var(--brand-pink) !important;
+    color: #aaaaaa !important;
+}
+
+/* Form elements */
+.form-control {
+    background-color: var(--brand-gray);
+    border-color: var(--brand-light-gray);
+    color: var(--brand-white);
+}
+
+.form-control:focus {
+    background-color: var(--brand-dark);
+    border-color: var(--brand-pink);
+    box-shadow: 0 0 0 0.25rem rgba(255, 105, 180, 0.25);
+}
+
+/* Alert styling */
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.2);
+    color: #ddc285;
+}
+
+.alert-success {
+    background-color: rgba(255, 105, 180, 0.1);
+    border-color: rgba(255, 105, 180, 0.2);
+    color: var(--brand-pink-light);
+}
+
+.alert-danger {
+    background-color: rgba(255, 77, 109, 0.1);
+    border-color: rgba(255, 77, 109, 0.2);
+    color: #ff8da0;
 }
